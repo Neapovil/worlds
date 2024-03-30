@@ -1,11 +1,11 @@
-name: CHANGE
-main: com.github.neapovil.change.Change
+name: Worlds
+main: com.github.neapovil.worlds.Worlds
 version: 1.0.0
 api-version: 1.19
 author: Neapovil
-website: https://github.com/Neapovil/CHANGE
+website: https://github.com/Neapovil/worlds
 depend:
   - CommandAPI
 permissions:
-  CHANGE.command:
+  worlds.command:
     default: op

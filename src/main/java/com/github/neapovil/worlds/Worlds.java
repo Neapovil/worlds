@@ -1,10 +1,10 @@
-package com.github.neapovil.change;
+package com.github.neapovil.worlds;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
-public final class Change extends JavaPlugin
+public final class Worlds extends JavaPlugin
 {
-    private static Change instance;
+    private static Worlds instance;
 
     @Override
     public void onEnable()
@@ -12,7 +12,7 @@ public final class Change extends JavaPlugin
         instance = this;
     }
 
-    public static Change instance()
+    public static Worlds instance()
     {
         return instance;
     }
