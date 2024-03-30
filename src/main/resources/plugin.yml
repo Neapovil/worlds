@@ -11,3 +11,5 @@ permissions:
     default: op
   worlds.broadcast:
     default: op
+  worlds.command.admin:
+    default: op

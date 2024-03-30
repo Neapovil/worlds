@@ -23,6 +23,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import com.destroystokyo.paper.event.server.ServerTickEndEvent;
 import com.github.neapovil.worlds.command.ArenaCommand;
+import com.github.neapovil.worlds.command.LobbyCommand;
 import com.github.neapovil.worlds.object.CreateWorld;
 import com.github.neapovil.worlds.resource.WorldsResource;
 import com.google.gson.Gson;
@@ -35,9 +36,11 @@ public final class Worlds extends JavaPlugin implements Listener
 {
     private static Worlds instance;
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    private WorldsResource worldsResource;
+    public WorldsResource worldsResource;
     private final List<CreateWorld> create = new ArrayList<>();
+    public final List<CreateWorld> lobbies = new ArrayList<>();
     private final List<String> remove = new ArrayList<>();
+    public final List<String> lobbiesRemove = new ArrayList<>();
 
     @Override
     public void onEnable()
@@ -47,6 +50,7 @@ public final class Worlds extends JavaPlugin implements Listener
         try
         {
             this.load();
+            this.worldsResource.worlds.forEach(i -> this.getServer().createWorld(WorldCreator.name(i)));
         }
         catch (IOException e)
         {
@@ -56,6 +60,7 @@ public final class Worlds extends JavaPlugin implements Listener
         this.getServer().getPluginManager().registerEvents(this, this);
 
         new ArenaCommand().register();
+        new LobbyCommand().register();
     }
 
     public static Worlds instance()
@@ -127,9 +132,31 @@ public final class Worlds extends JavaPlugin implements Listener
                 }
             });
         });
+        this.lobbies.forEach(i -> {
+            final World world = this.getServer().createWorld(WorldCreator.name(i.worldName));
+            final Player player = this.getServer().getPlayer(i.playerId);
+
+            if (world != null)
+            {
+                try
+                {
+                    this.worldsResource.worlds.add(i.worldName);
+                    this.save();
+                    player.sendMessage("New lobby loaded: " + i.worldName);
+                }
+                catch (IOException e)
+                {
+                    player.sendRichMessage("<red>Unable to load local world");
+                    this.getLogger().severe(e.getMessage());
+                }
+            }
+        });
+        this.lobbiesRemove.forEach(i -> this.getServer().unloadWorld(i, false));
 
         this.create.clear();
         this.remove.clear();
+        this.lobbies.clear();
+        this.lobbiesRemove.clear();
     }
 
     @EventHandler
@@ -178,6 +205,6 @@ public final class Worlds extends JavaPlugin implements Listener
     @EventHandler
     private void onPlayerJoin(PlayerJoinEvent event)
     {
-        event.getPlayer().teleportAsync(event.getPlayer().getWorld().getSpawnLocation());
+        event.getPlayer().teleportAsync(this.getServer().getWorld("world").getSpawnLocation());
     }
 }
