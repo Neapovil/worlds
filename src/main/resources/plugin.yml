@@ -9,3 +9,5 @@ depend:
 permissions:
   worlds.command:
     default: op
+  worlds.broadcast:
+    default: op
