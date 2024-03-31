@@ -16,6 +16,8 @@ import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityExhaustionEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
@@ -235,5 +237,33 @@ public final class Worlds extends JavaPlugin implements Listener
     private void onPlayerJoin(PlayerJoinEvent event)
     {
         event.getPlayer().teleportAsync(this.getServer().getWorld("world").getSpawnLocation().toCenterLocation());
+    }
+
+    @EventHandler
+    private void onEntityExhaustion(EntityExhaustionEvent event)
+    {
+        if (!(event.getEntity() instanceof Player player))
+        {
+            return;
+        }
+
+        if (player.getWorld().getName().equalsIgnoreCase("world"))
+        {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    private void onEntityDamage(EntityDamageEvent event)
+    {
+        if (!(event.getEntity() instanceof Player player))
+        {
+            return;
+        }
+
+        if (player.getWorld().getName().equalsIgnoreCase("world"))
+        {
+            event.setCancelled(true);
+        }
     }
 }
