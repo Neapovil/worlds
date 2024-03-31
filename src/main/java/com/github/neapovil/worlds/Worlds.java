@@ -24,7 +24,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import com.destroystokyo.paper.event.server.ServerTickEndEvent;
 import com.github.neapovil.worlds.command.ArenaCommand;
 import com.github.neapovil.worlds.command.LobbyCommand;
-import com.github.neapovil.worlds.object.CreateWorld;
+import com.github.neapovil.worlds.object.CreateArena;
+import com.github.neapovil.worlds.object.CreateLobby;
 import com.github.neapovil.worlds.resource.WorldsResource;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -37,15 +38,32 @@ public final class Worlds extends JavaPlugin implements Listener
     private static Worlds instance;
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     public WorldsResource worldsResource;
-    private final List<CreateWorld> create = new ArrayList<>();
-    public final List<CreateWorld> lobbies = new ArrayList<>();
-    private final List<String> remove = new ArrayList<>();
-    public final List<String> lobbiesRemove = new ArrayList<>();
+    private final List<CreateArena> newArenas = new ArrayList<>();
+    public final List<CreateLobby> newLobbies = new ArrayList<>();
+    private final List<String> oldArenas = new ArrayList<>();
+    public final List<String> oldLobbies = new ArrayList<>();
+    public Path baseDir;
+    public Path arenaDir;
 
     @Override
     public void onEnable()
     {
         instance = this;
+
+        this.baseDir = this.getServer().getPluginsFolder().toPath().resolve("../");
+        this.arenaDir = this.baseDir.resolve("arenas");
+
+        if (!Files.isDirectory(this.arenaDir))
+        {
+            try
+            {
+                Files.createDirectory(this.arenaDir);
+            }
+            catch (IOException e)
+            {
+                e.printStackTrace();
+            }
+        }
 
         try
         {
@@ -68,9 +86,9 @@ public final class Worlds extends JavaPlugin implements Listener
         return instance;
     }
 
-    public void createWorld(CreateWorld createWorld)
+    public void createArena(CreateArena createArena)
     {
-        this.create.add(createWorld);
+        this.newArenas.add(createArena);
     }
 
     public void load() throws IOException
@@ -86,21 +104,21 @@ public final class Worlds extends JavaPlugin implements Listener
         Files.write(this.getDataFolder().toPath().resolve("worlds.json"), string.getBytes());
     }
 
-    private void generateWorld(CreateWorld createWorld)
+    private void generateArena(CreateArena createArena)
     {
         this.getServer().getScheduler().runTaskAsynchronously(this, () -> {
             try
             {
-                FileUtils.copyDirectory(this.getServer().getPluginsFolder().toPath().resolve("../void").toFile(),
-                        this.getServer().getPluginsFolder().toPath().resolve("../" + createWorld.worldName).toFile());
+                FileUtils.copyDirectory(this.arenaDir.resolve(createArena.arena).toFile(),
+                        this.baseDir.resolve(createArena.worldName).toFile());
 
                 this.getServer().getScheduler().runTask(this, () -> {
-                    final World world = this.getServer().createWorld(WorldCreator.name(createWorld.worldName));
-                    final Player player = this.getServer().getPlayer(createWorld.playerId);
+                    final World world = this.getServer().createWorld(WorldCreator.name(createArena.worldName));
+                    final Player player = this.getServer().getPlayer(createArena.playerId);
 
                     if (world != null)
                     {
-                        player.sendMessage("Arena created. Teleporting... (Arena: %s)".formatted(createWorld.worldName));
+                        player.sendMessage("Arena created. Teleporting... (Arena: %s)".formatted(createArena.worldName));
                         player.teleportAsync(world.getSpawnLocation(), TeleportCause.PLUGIN);
                     }
                 });
@@ -116,13 +134,13 @@ public final class Worlds extends JavaPlugin implements Listener
     @EventHandler
     private void onServerTickEnd(ServerTickEndEvent event)
     {
-        this.create.forEach(i -> this.generateWorld(i));
-        this.remove.forEach(i -> {
+        this.newArenas.forEach(i -> this.generateArena(i));
+        this.oldArenas.forEach(i -> {
             this.getServer().unloadWorld(i, false);
             this.getServer().getScheduler().runTaskAsynchronously(this, () -> {
                 try
                 {
-                    Files.walk(this.getServer().getPluginsFolder().toPath().resolve("../" + i))
+                    Files.walk(this.baseDir.resolve(i))
                             .sorted(Comparator.reverseOrder())
                             .map(Path::toFile)
                             .forEach(File::delete);
@@ -133,7 +151,8 @@ public final class Worlds extends JavaPlugin implements Listener
                 }
             });
         });
-        this.lobbies.forEach(i -> {
+
+        this.newLobbies.forEach(i -> {
             final World world = this.getServer().createWorld(WorldCreator.name(i.worldName));
             final Player player = this.getServer().getPlayer(i.playerId);
 
@@ -152,12 +171,12 @@ public final class Worlds extends JavaPlugin implements Listener
                 }
             }
         });
-        this.lobbiesRemove.forEach(i -> this.getServer().unloadWorld(i, false));
+        this.oldLobbies.forEach(i -> this.getServer().unloadWorld(i, false));
 
-        this.create.clear();
-        this.remove.clear();
-        this.lobbies.clear();
-        this.lobbiesRemove.clear();
+        this.newArenas.clear();
+        this.oldArenas.clear();
+        this.newLobbies.clear();
+        this.oldLobbies.clear();
     }
 
     @EventHandler
@@ -170,7 +189,7 @@ public final class Worlds extends JavaPlugin implements Listener
 
         if (event.getFrom().getPlayers().size() == 0)
         {
-            this.remove.add(event.getFrom().getName());
+            this.oldArenas.add(event.getFrom().getName());
         }
     }
 
@@ -198,7 +217,7 @@ public final class Worlds extends JavaPlugin implements Listener
         this.getServer().getScheduler().runTask(this, () -> {
             if (world.getPlayers().size() == 0)
             {
-                this.remove.add(world.getName());
+                this.oldArenas.add(world.getName());
             }
         });
     }

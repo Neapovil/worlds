@@ -2,7 +2,7 @@ package com.github.neapovil.worlds.command;
 
 import org.bukkit.World;
 
-import com.github.neapovil.worlds.object.CreateWorld;
+import com.github.neapovil.worlds.object.CreateLobby;
 
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
@@ -28,7 +28,7 @@ public final class LobbyCommand extends AbstractCommand
                         throw CommandAPI.failWithString("A world with this name already exists");
                     }
 
-                    plugin.lobbies.add(new CreateWorld(player.getUniqueId(), name));
+                    plugin.newLobbies.add(new CreateLobby(player.getUniqueId(), name));
                 })
                 .register();
 
@@ -45,7 +45,7 @@ public final class LobbyCommand extends AbstractCommand
                         throw CommandAPI.failWithString("This world cannot be unloaded");
                     }
 
-                    plugin.lobbiesRemove.add(world.getName());
+                    plugin.oldLobbies.add(world.getName());
 
                     player.sendMessage("World added to removal");
                 })
