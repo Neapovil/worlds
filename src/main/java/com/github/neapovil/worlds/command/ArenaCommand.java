@@ -21,27 +21,25 @@ public final class ArenaCommand extends AbstractCommand
     @Override
     public void register()
     {
-        new CommandAPICommand("worlds")
+        new CommandAPICommand("arena")
                 .withPermission("worlds.command")
-                .withArguments(new LiteralArgument("arena"))
                 .withArguments(new LiteralArgument("create"))
-                .withArguments(new StringArgument("arena").replaceSuggestions(ArgumentSuggestions.strings(plugin.worldsResource.arenas)))
+                .withArguments(new StringArgument("name").replaceSuggestions(ArgumentSuggestions.strings(plugin.worldsResource.arenas)))
                 .executesPlayer((player, args) -> {
-                    final String arena = (String) args.get("arena");
+                    final String name = (String) args.get("name");
 
-                    if (!plugin.worldsResource.arenas.contains(arena))
+                    if (!plugin.worldsResource.arenas.contains(name))
                     {
                         throw CommandAPI.failWithString("Arena not found");
                     }
 
                     player.sendMessage("Creating arena...");
-                    plugin.createArena(new CreateArena(player.getUniqueId(), "arena-" + RandomStringUtils.randomNumeric(3), arena));
+                    plugin.createArena(new CreateArena(player.getUniqueId(), "arena-" + RandomStringUtils.randomNumeric(3), name));
                 })
                 .register();
 
-        new CommandAPICommand("worlds")
+        new CommandAPICommand("arena")
                 .withPermission("worlds.command")
-                .withArguments(new LiteralArgument("arena"))
                 .withArguments(new LiteralArgument("tp"))
                 .withArguments(new WorldArgument("arena").replaceSafeSuggestions(SafeSuggestions.suggest(info -> {
                     return plugin.getServer().getWorlds().stream().filter(i -> i.getName().startsWith("arena-")).toArray(World[]::new);

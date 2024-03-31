@@ -12,6 +12,7 @@ import org.apache.commons.io.FileUtils;
 import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
+import org.bukkit.attribute.Attribute;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -50,7 +51,7 @@ public final class Worlds extends JavaPlugin implements Listener
     {
         instance = this;
 
-        this.baseDir = this.getServer().getPluginsFolder().toPath().resolve("../");
+        this.baseDir = this.getServer().getWorldContainer().toPath();
         this.arenaDir = this.baseDir.resolve("arenas");
 
         if (!Files.isDirectory(this.arenaDir))
@@ -119,7 +120,7 @@ public final class Worlds extends JavaPlugin implements Listener
                     if (world != null)
                     {
                         player.sendMessage("Arena created. Teleporting... (Arena: %s)".formatted(createArena.worldName));
-                        player.teleportAsync(world.getSpawnLocation(), TeleportCause.PLUGIN);
+                        player.teleportAsync(world.getSpawnLocation().toCenterLocation(), TeleportCause.PLUGIN);
                     }
                 });
             }
@@ -200,10 +201,14 @@ public final class Worlds extends JavaPlugin implements Listener
     @EventHandler
     private void onPlayerChangedWorld1(PlayerChangedWorldEvent event)
     {
+        final Player player = event.getPlayer();
         this.getServer().getScheduler().runTask(this, () -> {
-            if (event.getPlayer().getWorld().getName().startsWith("arena-"))
+            if (player.getWorld().getName().startsWith("arena-"))
             {
-                event.getPlayer().setGameMode(GameMode.ADVENTURE);
+                player.setGameMode(GameMode.ADVENTURE);
+                player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
+                player.setFoodLevel(20);
+                player.setSaturation(4);
             }
         });
     }
@@ -229,6 +234,6 @@ public final class Worlds extends JavaPlugin implements Listener
     @EventHandler
     private void onPlayerJoin(PlayerJoinEvent event)
     {
-        event.getPlayer().teleportAsync(this.getServer().getWorld("world").getSpawnLocation());
+        event.getPlayer().teleportAsync(this.getServer().getWorld("world").getSpawnLocation().toCenterLocation());
     }
 }

@@ -51,21 +51,19 @@ public final class LobbyCommand extends AbstractCommand
                 })
                 .register();
 
-        new CommandAPICommand("worlds")
+        new CommandAPICommand("lobby")
                 .withPermission("worlds.command")
-                .withArguments(new LiteralArgument("lobby"))
-                .withArguments(new LiteralArgument("tp"))
                 .withArguments(new WorldArgument("world"))
                 .executesPlayer((player, args) -> {
                     final World world = (World) args.get("world");
-                    player.teleportAsync(world.getSpawnLocation());
+                    player.teleportAsync(world.getSpawnLocation().toCenterLocation());
                 })
                 .register();
 
         new CommandAPICommand("lobby")
                 .withPermission("worlds.command")
                 .executesPlayer((player, args) -> {
-                    player.teleportAsync(plugin.getServer().getWorld("world").getSpawnLocation());
+                    player.teleportAsync(plugin.getServer().getWorld("world").getSpawnLocation().toCenterLocation());
                 })
                 .register();
     }
