@@ -93,13 +93,14 @@ public final class Worlds extends JavaPlugin implements Listener
             {
                 FileUtils.copyDirectory(this.getServer().getPluginsFolder().toPath().resolve("../void").toFile(),
                         this.getServer().getPluginsFolder().toPath().resolve("../" + createWorld.worldName).toFile());
+
                 this.getServer().getScheduler().runTask(this, () -> {
                     final World world = this.getServer().createWorld(WorldCreator.name(createWorld.worldName));
                     final Player player = this.getServer().getPlayer(createWorld.playerId);
 
                     if (world != null)
                     {
-                        player.sendMessage("Arena created. Teleporting...");
+                        player.sendMessage("Arena created. Teleporting... (Arena: %s)".formatted(createWorld.worldName));
                         player.teleportAsync(world.getSpawnLocation(), TeleportCause.PLUGIN);
                     }
                 });

@@ -21,7 +21,7 @@ public final class ArenaCommand extends AbstractCommand
                 .withArguments(new LiteralArgument("create"))
                 .executesPlayer((player, args) -> {
                     player.sendMessage("Creating arena...");
-                    plugin.createWorld(new CreateWorld(player.getUniqueId(), "arena-" + RandomStringUtils.randomAlphanumeric(20)));
+                    plugin.createWorld(new CreateWorld(player.getUniqueId(), "arena-" + RandomStringUtils.randomNumeric(3)));
                 })
                 .register();
 
