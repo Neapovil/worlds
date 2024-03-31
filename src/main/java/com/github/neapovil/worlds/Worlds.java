@@ -125,7 +125,7 @@ public final class Worlds extends JavaPlugin implements Listener
             }
             catch (IOException e)
             {
-                this.getServer().broadcast(Component.text("Unable to create arena: " + e.getMessage(), TextColor.color(0xff0000)), "worlds.broadcast");
+                this.getServer().broadcast(Component.text("Unable to create arena: " + e.getMessage(), TextColor.color(0xff0000)), "worlds.broadcast.admin");
                 this.getLogger().severe(e.getMessage());
             }
         });
@@ -147,7 +147,8 @@ public final class Worlds extends JavaPlugin implements Listener
                 }
                 catch (IOException e)
                 {
-                    e.printStackTrace();
+                    this.getServer().broadcast(Component.text("Unable to remove arena: " + i), "worlds.broadcast.admin");
+                    this.getLogger().severe(e.getMessage());
                 }
             });
         });
@@ -158,17 +159,20 @@ public final class Worlds extends JavaPlugin implements Listener
 
             if (world != null)
             {
-                try
-                {
-                    this.worldsResource.worlds.add(i.worldName);
-                    this.save();
-                    player.sendMessage("New lobby loaded: " + i.worldName);
-                }
-                catch (IOException e)
-                {
-                    player.sendRichMessage("<red>Unable to load local world");
-                    this.getLogger().severe(e.getMessage());
-                }
+                this.worldsResource.worlds.add(i.worldName);
+
+                this.getServer().getScheduler().runTaskAsynchronously(this, () -> {
+                    try
+                    {
+                        this.save();
+                        player.sendMessage("New lobby loaded: " + i.worldName);
+                    }
+                    catch (IOException e)
+                    {
+                        player.sendRichMessage("<red>Unable to load local world");
+                        this.getLogger().severe(e.getMessage());
+                    }
+                });
             }
         });
         this.oldLobbies.forEach(i -> this.getServer().unloadWorld(i, false));

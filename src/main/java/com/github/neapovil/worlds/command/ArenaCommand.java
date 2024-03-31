@@ -2,7 +2,6 @@ package com.github.neapovil.worlds.command;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.bukkit.World;
@@ -77,22 +76,15 @@ public final class ArenaCommand extends AbstractCommand
 
                     plugin.worldsResource.arenas.add(name);
 
-                    CompletableFuture.runAsync(() -> {
+                    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
                         try
                         {
                             plugin.save();
+                            player.sendMessage("New arena loaded: " + name);
                         }
                         catch (Exception e)
                         {
                             plugin.getLogger().severe(e.getMessage());
-                        }
-                    }).whenComplete((a, b) -> {
-                        if (b == null)
-                        {
-                            player.sendMessage("New arena loaded: " + name);
-                        }
-                        else
-                        {
                             player.sendRichMessage("<red>Unable to load arena: " + name);
                         }
                     });
@@ -121,22 +113,15 @@ public final class ArenaCommand extends AbstractCommand
 
                     plugin.worldsResource.arenas.removeIf(i -> i.equalsIgnoreCase(name));
 
-                    CompletableFuture.runAsync(() -> {
+                    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
                         try
                         {
                             plugin.save();
+                            player.sendMessage("Arena unloaded: " + name);
                         }
                         catch (Exception e)
                         {
                             plugin.getLogger().severe(e.getMessage());
-                        }
-                    }).whenComplete((a, b) -> {
-                        if (b == null)
-                        {
-                            player.sendMessage("Arena unloaded: " + name);
-                        }
-                        else
-                        {
                             player.sendRichMessage("<red>Unable to unload arena: " + name);
                         }
                     });
