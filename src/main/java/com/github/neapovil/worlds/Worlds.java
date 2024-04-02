@@ -228,6 +228,15 @@ public final class Worlds extends JavaPlugin implements Listener
     }
 
     @EventHandler
+    private void onPlayerChangedWorld2(PlayerChangedWorldEvent event)
+    {
+        if (event.getPlayer().getWorld().getName().equalsIgnoreCase("world"))
+        {
+            event.getPlayer().setGameMode(GameMode.SURVIVAL);
+        }
+    }
+
+    @EventHandler
     private void onPlayerQuit(PlayerQuitEvent event)
     {
         final World world = event.getPlayer().getWorld();

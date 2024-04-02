@@ -51,7 +51,7 @@ public final class LobbyCommand extends AbstractCommand
                     player.sendMessage("World added to removal");
 
                     plugin.worldsResource.worlds.removeIf(i -> i.equalsIgnoreCase(world.getName()));
-                    
+
                     plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
                         try
                         {
