@@ -34,6 +34,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.TextColor;
 
 public final class Worlds extends JavaPlugin implements Listener
@@ -123,6 +124,11 @@ public final class Worlds extends JavaPlugin implements Listener
                     {
                         player.sendMessage("Arena created. Teleporting... (Arena: %s)".formatted(createArena.worldName));
                         player.teleportAsync(world.getSpawnLocation().toCenterLocation(), TeleportCause.PLUGIN);
+                        final String playername = player.getName();
+                        final Component component = Component
+                                .text("%s made a new arena! Click this message or execute /arena join %s to join".formatted(playername, playername))
+                                .clickEvent(ClickEvent.runCommand("/arena join " + player.getName()));
+                        this.getServer().broadcast(component);
                     }
                 });
             }

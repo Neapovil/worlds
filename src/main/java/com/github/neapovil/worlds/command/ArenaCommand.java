@@ -5,12 +5,14 @@ import java.nio.file.Path;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.bukkit.World;
+import org.bukkit.entity.Player;
 
 import com.github.neapovil.worlds.object.CreateArena;
 
 import dev.jorel.commandapi.CommandAPI;
 import dev.jorel.commandapi.CommandAPICommand;
 import dev.jorel.commandapi.arguments.ArgumentSuggestions;
+import dev.jorel.commandapi.arguments.EntitySelectorArgument;
 import dev.jorel.commandapi.arguments.LiteralArgument;
 import dev.jorel.commandapi.arguments.SafeSuggestions;
 import dev.jorel.commandapi.arguments.StringArgument;
@@ -49,6 +51,22 @@ public final class ArenaCommand extends AbstractCommand
 
                     player.sendMessage("Teleporting to arena: " + world.getName());
                     player.teleport(world.getSpawnLocation());
+                })
+                .register();
+
+        new CommandAPICommand("arena")
+                .withPermission("worlds.command")
+                .withArguments(new LiteralArgument("join"))
+                .withArguments(new EntitySelectorArgument.OnePlayer("player"))
+                .executesPlayer((player, args) -> {
+                    final Player player1 = (Player) args.get("player");
+
+                    if (!player1.getWorld().getName().startsWith("arena-"))
+                    {
+                        throw CommandAPI.failWithString("Player not in arena");
+                    }
+
+                    player.teleport(player1.getWorld().getSpawnLocation().toCenterLocation());
                 })
                 .register();
 
