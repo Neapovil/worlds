@@ -242,6 +242,7 @@ public final class Worlds extends JavaPlugin implements Listener
     @EventHandler
     private void onPlayerJoin(PlayerJoinEvent event)
     {
+        event.getPlayer().setGameMode(GameMode.SURVIVAL);
         event.getPlayer().teleportAsync(this.getServer().getWorld("world").getSpawnLocation().toCenterLocation());
     }
 
