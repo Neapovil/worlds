@@ -13,12 +13,15 @@ import org.bukkit.GameMode;
 import org.bukkit.World;
 import org.bukkit.WorldCreator;
 import org.bukkit.attribute.Attribute;
+import org.bukkit.block.Sign;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.SignChangeEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityExhaustionEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
@@ -34,8 +37,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.TextComponent;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.format.Style;
 import net.kyori.adventure.text.format.TextColor;
+import net.kyori.adventure.text.format.TextDecoration;
 
 public final class Worlds extends JavaPlugin implements Listener
 {
@@ -243,7 +249,6 @@ public final class Worlds extends JavaPlugin implements Listener
     private void onPlayerJoin(PlayerJoinEvent event)
     {
         event.getPlayer().setGameMode(GameMode.SURVIVAL);
-        event.getPlayer().teleportAsync(this.getServer().getWorld("world").getSpawnLocation().toCenterLocation());
     }
 
     @EventHandler
@@ -272,5 +277,60 @@ public final class Worlds extends JavaPlugin implements Listener
         {
             event.setCancelled(true);
         }
+    }
+
+    @EventHandler
+    private void onLobbySign(SignChangeEvent event)
+    {
+        if (!((TextComponent) event.line(0)).content().equalsIgnoreCase("lobby"))
+        {
+            return;
+        }
+
+        final String worldname = ((TextComponent) event.line(1)).content();
+
+        if (worldname.isBlank() || this.getServer().getWorld(worldname) == null)
+        {
+            event.getPlayer().sendRichMessage("<red>Lobby not found");
+            return;
+        }
+
+        event.line(0, Component.text("lobby", Style.style(TextColor.color(0xF374AE), TextDecoration.BOLD)));
+        event.getPlayer().sendMessage("Lobby sign created for: " + worldname);
+    }
+
+    @EventHandler
+    private void onLobbySignInteract(PlayerInteractEvent event)
+    {
+        if (event.getClickedBlock() == null)
+        {
+            return;
+        }
+
+        if (!event.getAction().isRightClick())
+        {
+            return;
+        }
+
+        if (!(event.getClickedBlock().getState() instanceof Sign sign))
+        {
+            return;
+        }
+
+        if (!((TextComponent) sign.line(0)).content().equalsIgnoreCase("lobby"))
+        {
+            return;
+        }
+
+        final String worldname = ((TextComponent) sign.line(1)).content();
+        final World world = this.getServer().getWorld(worldname);
+
+        if (world == null)
+        {
+            event.getPlayer().sendRichMessage("<red>Lobby not found");
+            return;
+        }
+
+        event.getPlayer().teleportAsync(world.getSpawnLocation().toCenterLocation(), TeleportCause.PLUGIN);
     }
 }
