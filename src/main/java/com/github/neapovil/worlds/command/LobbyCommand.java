@@ -1,5 +1,7 @@
 package com.github.neapovil.worlds.command;
 
+import java.io.IOException;
+
 import org.bukkit.World;
 
 import com.github.neapovil.worlds.object.CreateLobby;
@@ -46,8 +48,21 @@ public final class LobbyCommand extends AbstractCommand
                     }
 
                     plugin.oldLobbies.add(world.getName());
-
                     player.sendMessage("World added to removal");
+
+                    plugin.worldsResource.worlds.removeIf(i -> i.equalsIgnoreCase(world.getName()));
+                    
+                    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+                        try
+                        {
+                            plugin.save();
+                        }
+                        catch (IOException e)
+                        {
+                            plugin.getLogger().severe("Unable to unload lobby: " + world.getName());
+                            player.sendRichMessage("<red>Unable to unload lobby: " + world.getName());
+                        }
+                    });
                 })
                 .register();
 
